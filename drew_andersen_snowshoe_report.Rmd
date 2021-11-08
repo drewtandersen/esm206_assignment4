@@ -1,30 +1,60 @@
 ---
-title: "drew_andersen_snowshoe_report"
+title: "Snowshoe Hare Analysis"
 author: "Drew Andersen"
 date: "11/7/2021"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup, include = TRUE, message = FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+#attach packages
+library(tidyverse)
+library(janitor)
+library(here)
+library(lubridate)
+library(kableExtra)
+```
+# 1. Overview
+
+# 2. Data and methods
+```{r}
+#Read in the data
+snowshoe <- read_csv(here("data","bonanza_hares.csv"))
 ```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+### 3. Preliminary results
 
-```{r cars}
-summary(cars)
+#### A. Juvenile hare initial investigation:
+```{r}
+#subset for data visualization 
+snowshoe_count <- snowshoe %>% 
+  mutate(date_new = mdy(date)) %>% 
+  mutate(year = year(date_new)) %>% 
+  group_by(year) %>% 
+  summarize(trap_count = n())
+
+#in text referencing
+trap_max <- max(snowshoe_count$trap_count)
+trap_min <- min(snowshoe_count$trap_count)
+trap_mean <- round(mean(snowshoe_count$trap_count),0)
+trap_median <- median(snowshoe_count$trap_count)
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+#data_visualization
+ggplot(data = snowshoe_count, aes(x = year, y = trap_count)) +
+  geom_line() +
+  labs(title = "Juvenile Hare Trap Count",
+       y = "Total Hares Trapped",
+       x = NULL,
+       caption = "Fig 1. Annual juvenile hare trap count between 1998-2012. This total reflects the number of juvenile hares trapped each year during this study.")
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+#### B. Difference in flipper length between male and female gentoo penguins
+#### C. Relationship between flipper length and body mass
+## Summary
+## Citations
+
