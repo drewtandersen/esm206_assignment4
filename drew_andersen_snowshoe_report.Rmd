@@ -100,17 +100,17 @@ snowshoe_stats %>%
                       "Standard Deviation (g)"),
         caption = "Table 1. Summary statistics for male and female juvenile hare weights.") %>% 
   kable_styling(full_width = FALSE)
+```
 
+```{r}
 #creation of vectors for t-test
 snow_male <- snowshoe_weight %>% 
   filter(sex == "Male") %>% 
-  select(weight) %>% 
-  drop_na(weight)
+  pull(weight)
 
 snow_female <- snowshoe_weight %>% 
   filter(sex == "Female") %>% 
-  select(weight) %>% 
-  drop_na(weight)
+  pull(weight)
 
 snow_t <- t.test(snow_male, snow_female)
 mean_diff <- round(snow_t$estimate[2] - snow_t$estimate[1],0)
@@ -118,7 +118,30 @@ mean_diff <- round(snow_t$estimate[2] - snow_t$estimate[1],0)
 snow_cohen <- cohen.d(snow_male, snow_female)
 ```
 
+```{r}
+ggplot(data = snowshoe_weight, aes(x = weight)) +
+  geom_histogram(bins = 12) +
+  facet_wrap(~sex)
+
+ggplot(data = snowshoe_weight, aes(sample = weight)) +
+  geom_qq() +
+  facet_wrap(~sex)
+```
+
+
 ## D. Weight and Hind Foot Length 
+```{r}
+ggplot(data = snowshoe, aes(x = hindft , y = weight)) +
+  geom_point() +
+  labs(x = "Hind Foot (mm)",
+       y = "Weight (g)",
+       caption = "") +
+  theme_classic()
+
+snowshoe_lm <- lm(weight ~ hindft, data = snowshoe)
+```
+
 #### Summary
+
 #### Citations
 
