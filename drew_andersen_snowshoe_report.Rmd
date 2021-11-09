@@ -15,6 +15,7 @@ library(here)
 library(effsize)
 library(lubridate)
 library(kableExtra)
+library(ggbeeswarm)
 ```
 # 1. Overview
 
@@ -30,6 +31,7 @@ snowshoe <- read_csv(here("data","bonanza_hares.csv"))
 ```{r}
 #subset for data visualization 
 snowshoe_count <- snowshoe %>% 
+  filter(age =="j") %>% 
   mutate(date_new = mdy(date)) %>% 
   mutate(year = year(date_new)) %>% 
   group_by(year) %>% 
@@ -65,21 +67,26 @@ snowshoe_weight <- snowshoe %>%
     sex == "f" ~ "Female",
     is.na(sex) ~ "Unconfirmed")) %>% 
   drop_na(weight) %>%
-  filter(weight != 0)
+  filter(weight != 0,
+         age == "j")
  
 
 #histogram of weight distributions by sex and site
-ggplot(data = snowshoe_weight, aes(weight)) +
-  geom_histogram(bins = 15, aes(fill = sex)) +
+ggplot(data = snowshoe_weight, aes(sex,weight)) +
+  geom_jitter(aes(color = sex), size = 2.5, width = .35) +
   facet_wrap(~site) +
-  scale_fill_manual(values = c("hotpink","skyblue2","snow4")) +
+  scale_color_manual(values = c("maroon3","royalblue3","springgreen4")) +
   labs(title = "Juvenile Hare Weight by Trap Site",
-       y = "Count",
-       x = "Weight (g)",
-       color = "Sex",
+       y = "Body Mass (g)",
+       x = NULL,
        caption = "Fig 2. Juvenile hare weight distribution by site and sex. The group marked NA") +
-    theme(legend.position = c(.15,.75),
-         plot.caption = element_text(hjust = 0))
+    theme(legend.position = "none") +
+    stat_summary(fun=mean, 
+               geom="point", 
+               shape=20, 
+               size=6, 
+               color="black", 
+               fill="black")
 ```
 
 ## C. Juvenile Hare Weight Comparison
@@ -120,7 +127,7 @@ snow_cohen <- cohen.d(snow_male, snow_female)
 
 ```{r}
 ggplot(data = snowshoe_weight, aes(x = weight)) +
-  geom_histogram(bins = 12) +
+  geom_histogram(bins = 18) +
   facet_wrap(~sex)
 
 ggplot(data = snowshoe_weight, aes(sample = weight)) +
@@ -132,9 +139,9 @@ ggplot(data = snowshoe_weight, aes(sample = weight)) +
 ## D. Weight and Hind Foot Length 
 ```{r}
 ggplot(data = snowshoe, aes(x = hindft , y = weight)) +
-  geom_point() +
-  labs(x = "Hind Foot (mm)",
-       y = "Weight (g)",
+  geom_point(aes(color = "cyan3"), size = .75)+
+  labs(x = "Hind Foot Length(mm)",
+       y = "Body Mass (g)",
        caption = "") +
   theme_classic()
 
