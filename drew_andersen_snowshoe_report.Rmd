@@ -12,6 +12,7 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 library(tidyverse)
 library(janitor)
 library(here)
+library(effsize)
 library(lubridate)
 library(kableExtra)
 ```
@@ -42,7 +43,7 @@ trap_median <- median(snowshoe_count$trap_count)
 
 #data_visualization
 ggplot(data = snowshoe_count, aes(x = year, y = trap_count)) +
-  geom_col(fill = "purple") +
+  geom_col(fill = "dodgerblue4") +
   labs(title = "Juvenile Hare Trap Count",
        y = "Total Hares Trapped",
        x = NULL,
@@ -52,7 +53,7 @@ ggplot(data = snowshoe_count, aes(x = year, y = trap_count)) +
 ```
 
 ## B. Juvenile Hare Weights 
-```{r}
+```{r fig.align="center", echo = FALSE, fig.width = 7}
 #subset for data visualization 
 snowshoe_weight <- snowshoe %>% 
   mutate(site= case_when(
@@ -62,21 +63,28 @@ snowshoe_weight <- snowshoe %>%
   mutate(sex = case_when(
     sex == "m" ~ "Male",
     sex == "f" ~ "Female",
-    is.na(sex) ~ "Unconfirmed"))
+    is.na(sex) ~ "Unconfirmed")) %>% 
+  drop_na(weight) %>%
+  filter(weight != 0)
+ 
 
 #histogram of weight distributions by sex and site
 ggplot(data = snowshoe_weight, aes(weight)) +
-  geom_histogram(bins = 25, aes(fill = sex)) +
+  geom_histogram(bins = 15, aes(fill = sex)) +
   facet_wrap(~site) +
   scale_fill_manual(values = c("hotpink","skyblue2","snow4")) +
   labs(title = "Juvenile Hare Weight by Trap Site",
        y = "Count",
        x = "Weight (g)",
-       caption = "Fig 2. Juvenile hare weight distribution by site and sex. The group marked NA")
+       color = "Sex",
+       caption = "Fig 2. Juvenile hare weight distribution by site and sex. The group marked NA") +
+    theme(legend.position = c(.15,.75),
+         plot.caption = element_text(hjust = 0))
 ```
 
 ## C. Juvenile Hare Weight Comparison
 ```{r}
+#creating table for summarry statistics 
 snowshoe_stats <- snowshoe_weight %>% 
   filter(sex != "Unconfirmed") %>% 
   group_by(sex) %>% 
@@ -84,6 +92,7 @@ snowshoe_stats <- snowshoe_weight %>%
             mean = round(mean(weight, na.rm = TRUE),0),
             std_dev = round(sd(weight, na.rm = TRUE),0))
 
+#formatting table above for knitted doc
 snowshoe_stats %>% 
   kable(col.names = c("Sex", #renaming the column names from their variable names
                       "Sample Size", 
@@ -91,6 +100,22 @@ snowshoe_stats %>%
                       "Standard Deviation (g)"),
         caption = "Table 1. Summary statistics for male and female juvenile hare weights.") %>% 
   kable_styling(full_width = FALSE)
+
+#creation of vectors for t-test
+snow_male <- snowshoe_weight %>% 
+  filter(sex == "Male") %>% 
+  select(weight) %>% 
+  drop_na(weight)
+
+snow_female <- snowshoe_weight %>% 
+  filter(sex == "Female") %>% 
+  select(weight) %>% 
+  drop_na(weight)
+
+snow_t <- t.test(snow_male, snow_female)
+mean_diff <- round(snow_t$estimate[2] - snow_t$estimate[1],0)
+
+snow_cohen <- cohen.d(snow_male, snow_female)
 ```
 
 ## D. Weight and Hind Foot Length 
