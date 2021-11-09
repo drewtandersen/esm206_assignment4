@@ -70,7 +70,6 @@ snowshoe_weight <- snowshoe %>%
   filter(weight != 0,
          age == "j")
  
-
 #histogram of weight distributions by sex and site
 ggplot(data = snowshoe_weight, aes(sex,weight)) +
   geom_jitter(aes(color = sex), size = 2.5, width = .35) +
@@ -134,7 +133,6 @@ ggplot(data = snowshoe_weight, aes(sample = weight)) +
   geom_qq() +
   facet_wrap(~sex)
 ```
-
 
 ## D. Weight and Hind Foot Length 
 ```{r}
