@@ -1,11 +1,11 @@
 ---
-title: "Snowshoe Hare Analysis"
+title: "Juvenile snowshoe hair: exploratory report"
 author: "Drew Andersen"
-date: "11/7/2021"
+date: "11/10/2021"
 output: html_document
 ---
 
-```{r setup, include = TRUE, message = FALSE}
+```{r setup, include = FALSE, message = FALSE}
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 
 #attach packages
@@ -15,32 +15,30 @@ library(here)
 library(effsize)
 library(lubridate)
 library(kableExtra)
+library(ggthemes)
 ```
-# 1. Overview
+# A. Overview
 
-This report provides an exploratory analysis of juvenile snowshoe hares in Bonanza Creek Experimental Forest (Long Term Ecological Research site) from 1998-2012. This miniature report will explore count and sizes of juvenile snowshoe hares and compare these variables in relation to the sex and hind foot length of the hare. 
+This report provides an exploratory analysis of juvenile snowshoe hares in Bonanza Creek Experimental Forest (Long Term Ecological Research site) located in central Alaska from 1998-2012. Snowshoe hares are a significant prey species in northern boreal forests and have been found to experience population fluctuations of 8-11 years (Kielland). This miniature report will explore count and sizes of juvenile snowshoe hares and compare these variables in relation to the sex and hind foot length of the hare. 
 
-# 2. Data and methods
+# B. Data and methods
 
-Snowshoe hare body measurements were collected by the Bonanza Creek LTER and made available for this analysis by Knut Kielland and other investigators at Bonanza Creek LTER site (see map). This data contains over 3000 hare observations, 371 of which were juvenile and the subject of this analysis. 
+Snowshoe hare body measurements were collected by the Bonanza Creek LTER and made available for this analysis by Knut Kielland and other investigators at Bonanza Creek LTER site. This data contains over 3000 hare observations, 371 of which are for juvenile hares and the subject of this analysis. After an analysis of the juvenile hare subset and data visualizations for the body masses of male and female juvenile hares, the masses for the two groups are compared by two-sample t-tests using a significance level ($\alpha$) of 0.05 throughout. The difference between sexes is described by Cohen's *d* efect size. The relationship between hind foot length and weight is explored using simple linear regression. All analyses are in R version 4.1.1 using RStudio version 1.4.1717. 
 
-Penguin structural size measurements were collected and made available by Dr. Kristen Gorman and colleagues at the Palmer Station Long Term Ecological Research (LTER) network site in Palmer Archipelago, Antarctica (see map from Gorman et al. (2014) in Figure 1). The data contain observations for 344 unique nesting penguins, collected over three seasons (2007, 2008, 2009). Following exploratory data visualization, flipper lengths between male and female penguins are by two-sample t-tests using a significance level ($\alpha$) of 0.05 throughout. Differences between groups are described by Cohen's *d* effect size. The relationship between flipper length and body mass is explored by simple linear regression. All analyses are in R version 4.0.2 using RStudio version 1.3.1056.
-```{r}
+```{r read in}
 #Read in and clean data
 snowshoe <- read_csv(here("data","bonanza_hares.csv"))
 ```
-
-# 3. Preliminary results
-
-## A. Juvenile hare initial investigation:
-```{r}
+# C. Juvenile hare initial investigation:
+## 1. Annual juvenile hare trap counts
+```{r task ir, fig.cap = "**Figure 1.** Annual juvenile hare trap count in Bonanza Creek Experimental Forest between 1998-2012. This total reflects the number of juvenile hares trapped each year during this study."}
 #subset for data visualization 
 snowshoe_count <- snowshoe %>% 
-  filter(age =="j") %>% 
+  filter(age == "j") %>% #filter for juveniles
   mutate(date_new = mdy(date)) %>% 
   mutate(year = year(date_new)) %>% 
   group_by(year) %>% 
-  summarize(trap_count = n())
+  summarize(trap_count = n()) 
 
 #in text referencing
 trap_max <- max(snowshoe_count$trap_count)
@@ -51,13 +49,14 @@ trap_median <- median(snowshoe_count$trap_count)
 #data_visualization
 ggplot(data = snowshoe_count, aes(x = year, y = trap_count)) +
   geom_col(fill = "dodgerblue4") +
-  labs(title = "Juvenile Hare Trap Count",
-       y = "Total Hares Trapped",
-       x = NULL,
-       caption = "Fig 1. Annual juvenile hare trap count between 1998-2012. This total reflects the number of juvenile hares trapped each year during this study.") +
-  scale_x_continuous(breaks = 1998:2012) +
-  theme_linedraw() 
+  labs(y = "Total Hares Trapped",
+       x = NULL) +
+  scale_x_continuous(breaks = 1998:2012) + #see all dates
+  scale_y_continuous(breaks = c(0, 25,50, 75, 100)) +
+  theme(text = element_text(color = "black")) +
+  theme_hc() 
 ```
+The number of juvenile snowshoe hares trapped annually during this study differed greatly from year to year. The maximum and minimum number of hares trapped during this study was `r trap_max` and `r trap_min`, respectively. Over the 14 year period, the average number of juveniles trapped was `r trap_mean`. It appears that the juvenile hare population experiences population spikes every 2-4 years that increase their population by 2-3 times. Overall it appears that the population is declining, but this data set does not encompass a large enough time span to confirm this trend. In addition, incongruities in the sampling process from year to year may have contributed to these large differences seen annually. These sampling errors can be attributed to the time of study, the number of traps, and the frequency of monitoring these traps within the research site. 
 
 ## B. Juvenile Hare Weights 
 ```{r fig.align="center", echo = FALSE, fig.width = 7}
