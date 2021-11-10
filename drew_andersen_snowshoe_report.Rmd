@@ -31,7 +31,7 @@ snowshoe <- read_csv(here("data","bonanza_hares.csv"))
 ```
 # C. Juvenile hare initial investigation:
 ## 1. Annual juvenile hare trap counts
-```{r task ir, fig.cap = "**Figure 1.** Annual juvenile hare trap count in Bonanza Creek Experimental Forest between 1998-2012. This total reflects the number of juvenile hares trapped each year during this study."}
+```{r task i, fig.cap = "**Figure 1.** Annual juvenile hare trap count in Bonanza Creek Experimental Forest between 1998-2012. This total reflects the number of juvenile hares trapped each year during this study."}
 #subset for data visualization 
 snowshoe_count <- snowshoe %>% 
   filter(age == "j") %>% #filter for juveniles
@@ -39,12 +39,6 @@ snowshoe_count <- snowshoe %>%
   mutate(year = year(date_new)) %>% 
   group_by(year) %>% 
   summarize(trap_count = n()) 
-
-#in text referencing
-trap_max <- max(snowshoe_count$trap_count)
-trap_min <- min(snowshoe_count$trap_count)
-trap_mean <- round(mean(snowshoe_count$trap_count),0)
-trap_median <- median(snowshoe_count$trap_count)
 
 #data_visualization
 ggplot(data = snowshoe_count, aes(x = year, y = trap_count)) +
@@ -55,14 +49,19 @@ ggplot(data = snowshoe_count, aes(x = year, y = trap_count)) +
   scale_y_continuous(breaks = c(0, 25,50, 75, 100)) +
   theme(text = element_text(color = "black")) +
   theme_hc() 
+
+#in text referencing
+trap_max <- max(snowshoe_count$trap_count)
+trap_min <- min(snowshoe_count$trap_count)
+trap_mean <- round(mean(snowshoe_count$trap_count),0)
 ```
 The number of juvenile snowshoe hares trapped annually during this study differed greatly from year to year. The maximum and minimum number of hares trapped during this study was `r trap_max` and `r trap_min`, respectively. Over the 14 year period, the average number of juveniles trapped was `r trap_mean`. It appears that the juvenile hare population experiences population spikes every 2-4 years that increase their population by 2-3 times. Overall it appears that the population is declining, but this data set does not encompass a large enough time span to confirm this trend. In addition, incongruities in the sampling process from year to year may have contributed to these large differences seen annually. These sampling errors can be attributed to the time of study, the number of traps, and the frequency of monitoring these traps within the research site. 
 
-## B. Juvenile Hare Weights 
-```{r fig.align="center", echo = FALSE, fig.width = 7}
+## 2. Juvenile hare weights 
+```{r task ii, fig.align="center", echo = FALSE, fig.width = 7, fig.cap = "**Figure 2.** Juvenile hare weight distribution by site and sex. The group marked NA"}
 #subset for data visualization 
 snowshoe_weight <- snowshoe %>% 
-  mutate(site= case_when(
+  mutate(site= case_when( #converting acronyms to full names
     grid == "bonrip" ~ "Bonanza Riparian",
     grid == "bonmat" ~ "Bonanza Mature",
     grid == "bonbs" ~ "Bonds")) %>% 
@@ -70,26 +69,27 @@ snowshoe_weight <- snowshoe %>%
     sex == "m" ~ "Male",
     sex == "f" ~ "Female",
     is.na(sex) ~ "Unconfirmed")) %>% 
-  drop_na(weight) %>%
-  filter(weight != 0,
-         age == "j")
+  drop_na(weight) %>% #dropping rows with NA weights 
+  filter(weight != 0, #filtering for rows with non zero values
+         age == "j") #filtering for juveniles
  
-#histogram of weight distributions by sex and site
+#jitter plot of mass distributions by sex and site
 ggplot(data = snowshoe_weight, aes(sex,weight)) +
-  geom_jitter(aes(color = sex), size = 2.5, width = .35) +
+  geom_jitter(aes(color = sex), size = 1.75, width = .35) +
   facet_wrap(~site) +
-  scale_color_manual(values = c("maroon3","royalblue3","springgreen4")) +
-  labs(title = "Juvenile Hare Weight by Trap Site",
-       y = "Body Mass (g)",
+  scale_color_manual(values = c("#FF00FF","#0000FF","#008080")) +
+  scale_x_discrete(breaks = NULL) + #drop redundant labels
+  scale_y_continuous(breaks = seq(from = 400, to = 1600, by = 200)) + #scaling y-axis at 200 g interval
+  labs(y = "Body Mass (g)",
        x = NULL,
-       caption = "Fig 2. Juvenile hare weight distribution by site and sex. The group marked NA") +
-    theme(legend.position = "none") +
+       color = NULL) +
     stat_summary(fun=mean, 
                geom="point", 
                shape=20, 
-               size=6, 
+               size=4, 
                color="black", 
-               fill="black")
+               fill="black") +
+  theme_hc()
 ```
 
 ## C. Juvenile Hare Weight Comparison
