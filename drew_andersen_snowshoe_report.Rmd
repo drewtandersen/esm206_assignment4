@@ -16,6 +16,7 @@ library(effsize)
 library(lubridate)
 library(kableExtra)
 library(ggthemes)
+library(broom)
 ```
 ## A. Overview
 
@@ -31,7 +32,7 @@ snowshoe <- read_csv(here("data","bonanza_hares.csv"))
 ```
 ## C. Juvenile hare initial investigation:
 #### 1. Annual juvenile hare trap counts
-```{r task i, fig.align="center"}
+```{r task i, fig.align="center", fig.width = 7}
 #subset for data visualization 
 snowshoe_count <- snowshoe %>% 
   filter(age == "j") %>% #filter for juveniles
@@ -139,19 +140,31 @@ snow_t <- t.test(snow_male, snow_female)
 snow_cohen <- cohen.d(snow_male, snow_female)
 ```
 
-```{r explore, include = FALSE}
-ggplot(data = snowshoe_weight, aes(x = weight)) +
+```{r explore, include = TRUE}
+ggplot(data = snowshoe_weight, aes(x = weight)) + #histogram to check for normality
   geom_histogram(bins = 18) +
   facet_wrap(~sex)
 
-ggplot(data = snowshoe_weight, aes(sample = weight)) +
+ggplot(data = snowshoe_weight, aes(sample = weight)) + #qqplot to examine normality
   geom_qq() +
   facet_wrap(~sex)
+
+plot(snowshoe_lm) #check homoscedasticity 
 ```
 On average, male juvenile snowshoe hares have a higher body mass than female juveniles (`r snowshoe_stats$mean[2]` $\pm$ `r snowshoe_stats$std_dev[2]` and `r snowshoe_stats$mean[1]` $\pm$ `r snowshoe_stats$std_dev[1]` g, respectively). The absolute difference in means is `r snowshoe_stats$mean[2] - snowshoe_stats$mean[1]` g (a `r diff_mean`% difference), however the difference in means is significant (Welch's two-sample t-test: t(`r round(snow_t$parameter,2)`) = `r round(snow_t$statistic,2)`, p < 0.05), and the effect size is large (Cohen's *d* = `r round(snow_cohen$estimate,2)`).
 
 #### 4. Body mass and hind foot length 
-```{r task iv, fig.align="center", echo = FALSE, fig.width = 7}
+```{r linear regression}
+snowshoe_lm <- lm(weight ~ hindft, data = snowshoe)
+snowshoe_lm_tidy <- tidy(snowshoe_lm) # for in text referencing 
+snowshoe_lm_glance <- glance(snowshoe_lm)
+
+snowshoe_cor <- cor.test(snowshoe_weight$weight, snowshoe_weight$hindft)
+snowshoe_cor_tidy <- tidy(snowshoe_cor)# Pearson's r correlation
+```
+The relationship between juvenile hair hind foot length and body mass appears relatively linear. Simple linear regression revealed that hind foot length significantly predicts penguin body mass (p < 0.05, R^2^ = `r round(snowshoe_lm_glance$r.squared,2)`) with an average slope of $\beta$ = `r round(snowshoe_lm_tidy$estimate[2], 2)` g mm^-1^ (i.e., for each one millimeter increase in hind foot length we expect an average increase in body mass of `r round(snowshoe_lm_tidy$estimate[2], 2)` g). There is a moderate correlation between hind foot length and body mass (Pearson's *r* = `r round(showshoe_cor_tidy$estimate,2)`, p < 0.05). Diagnostic plots (not included) reveal normally distributed and heteroscedastic residuals.
+
+```{r task iv plot, fig.align="center", echo = FALSE, fig.width = 7}
 #scatter plot of hind feet vs mass
 ggplot(data = snowshoe, aes(x = hindft , y = weight)) +
   geom_point(color = "#800080", size = 1) +
@@ -159,14 +172,23 @@ ggplot(data = snowshoe, aes(x = hindft , y = weight)) +
        y = "Body Mass (g)") +
   theme_hc() +
   theme(legend.position = "none") #dopping legend
-
-snowshoe_lm <- lm(weight ~ hindft, data = snowshoe)
 ```
 **Figure 3.** Relationship between hind foot length (mm) and body mass (g) for juvenile snowshoe hares in Bonanza Creek Experimental Forest. Data: Kielland et al. 2017.
 
-
 ## Summary
+Exploratory data analysis reveals the following initial findings: 
 
+- Juvenile snowshoe hare populations fluctuate year to year and may experience large spikes eery 2-4 years, however more data is needed to confirm this assertion. 
+- On average, male juvenile snowshoe hares have a higher body mass than female hares (the mean difference and effect size are both small in this case.)
+
+<<<START HERE>>>>
+- Flipper length appears linearly related with body mass across all three penguin species; the relationship (by simple linear regression) is significant, with a slope (expected average increase in body mass with a 1 mm increase in flipper length) of `r round(penguin_lm_tidy$estimate[2], 2)` g mm^-1^.
+
+Next steps (*Note: you can add anything here you think would be interesting to follow-up with, that was not included in the instructions*): 
+
+- Compare flipper lengths statistically (one-way ANOVA), including penguin sex as a covariate
+- Multiple linear regression to understand the relationship between species, sex, flipper length and body mass 
+- Analysis of nesting pairs to explore size correlation
 
 ### Citations
 
