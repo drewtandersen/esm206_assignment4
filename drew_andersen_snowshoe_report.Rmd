@@ -23,7 +23,7 @@ This report provides an exploratory analysis of juvenile snowshoe hares in Bonan
 
 # B. Data and methods
 
-Snowshoe hare body measurements were collected by the Bonanza Creek LTER and made available for this analysis by Knut Kielland and other investigators at Bonanza Creek LTER site. This data contains over 3000 hare observations, 371 of which are for juvenile hares and the subject of this analysis. After an analysis of the juvenile hare subset and data visualizations for the body masses of male and female juvenile hares, the masses for the two groups are compared by two-sample t-tests using a significance level ($\alpha$) of 0.05 throughout. The difference between sexes is described by Cohen's *d* efect size. The relationship between hind foot length and weight is explored using simple linear regression. All analyses are in R version 4.1.1 using RStudio version 1.4.1717. 
+Snowshoe hare body measurements were collected by the Bonanza Creek LTER and made available for this analysis by Knut Kielland and other investigators at Bonanza Creek LTER site. This data contains over 3000 hare observations, 371 of which are for juvenile hares and the subject of this analysis. After an analysis of the juvenile hare subset and data visualizations for the body masses of male and female juvenile hares, the masses for the two groups are compared by two-sample t-tests using a significance level ($\alpha$) of 0.05 throughout. The difference between sexes is described by Cohen's *d* efect size. The relationship between hind foot length and body mass is explored using simple linear regression. All analyses are in R version 4.1.1 using RStudio version 1.4.1717. 
 
 ```{r read in}
 #Read in and clean data
@@ -42,7 +42,7 @@ snowshoe_count <- snowshoe %>%
 
 #data_visualization
 ggplot(data = snowshoe_count, aes(x = year, y = trap_count)) +
-  geom_col(fill = "dodgerblue4") +
+  geom_col(fill = "#008080") +
   labs(y = "Total Hares Trapped",
        x = NULL) +
   scale_x_continuous(breaks = 1998:2012) + #see all dates
@@ -57,8 +57,8 @@ trap_mean <- round(mean(snowshoe_count$trap_count),0)
 ```
 The number of juvenile snowshoe hares trapped annually during this study differed greatly from year to year. The maximum and minimum number of hares trapped during this study was `r trap_max` and `r trap_min`, respectively. Over the 14 year period, the average number of juveniles trapped was `r trap_mean`. It appears that the juvenile hare population experiences population spikes every 2-4 years that increase their population by 2-3 times. Overall it appears that the population is declining, but this data set does not encompass a large enough time span to confirm this trend. In addition, incongruities in the sampling process from year to year may have contributed to these large differences seen annually. These sampling errors can be attributed to the time of study, the number of traps, and the frequency of monitoring these traps within the research site. 
 
-## 2. Juvenile hare weights 
-```{r task ii, fig.align="center", echo = FALSE, fig.width = 7, fig.cap = "**Figure 2.** Juvenile hare weight distributions by site and sex. The black square on each series indicates the mean of that particular series."}
+## 2. Juvenile hare body mass
+```{r task ii, fig.align="center", echo = FALSE, fig.width = 7, fig.cap = "**Figure 2.** Juvenile hare body mass distributions by site and sex. The black square on each series indicates the mean of that particular series."}
 #subset for data visualization 
 snowshoe_weight <- snowshoe %>% 
   mutate(site= case_when( #converting acronyms to full names
@@ -93,13 +93,15 @@ ggplot(data = snowshoe_weight, aes(sex,weight)) +
 ```
 The Bonanza Riparian & Mature areas share similar mean values for both male and female hares, while the Bonds area demonstrates larger mean values for each sex. However, this difference in means can be attributed to a lack of available data for that area.
 
-## C. Juvenile Hare Weight Comparison
-```{r}
-#creating table for summarry statistics 
+## C. Juvenile Hare Body Mass Comparison
+
+**Table 1.** Summary statistics (sample size, mean, and standard deviation) for male and female juvenile snowshoe hare body mass. Data: Kielland et al. 2017
+```{r task iii}
+#creating table for summary statistics 
 snowshoe_stats <- snowshoe_weight %>% 
   filter(sex != "Unconfirmed") %>% 
   group_by(sex) %>% 
-  summarize(sample_size = n(),
+  summarize(sample_size = n(), #calculating stats for each sex
             mean = round(mean(weight, na.rm = TRUE),0),
             std_dev = round(sd(weight, na.rm = TRUE),0))
 
@@ -107,13 +109,12 @@ snowshoe_stats <- snowshoe_weight %>%
 snowshoe_stats %>% 
   kable(col.names = c("Sex", #renaming the column names from their variable names
                       "Sample Size", 
-                      "Mean Weight (g)",
-                      "Standard Deviation (g)"),
-        caption = "Table 1. Summary statistics for male and female juvenile hare weights.") %>% 
-  kable_styling(full_width = FALSE)
+                      "Mean Body Mass (g)",
+                      "Standard Deviation (g)")) %>% 
+  kable_styling(full_width = TRUE)
 ```
 
-```{r}
+```{r t-test}
 #creation of vectors for t-test
 snow_male <- snowshoe_weight %>% 
   filter(sex == "Male") %>% 
@@ -129,7 +130,7 @@ mean_diff <- round(snow_t$estimate[2] - snow_t$estimate[1],0)
 snow_cohen <- cohen.d(snow_male, snow_female)
 ```
 
-```{r}
+```{r explore, include = FALSE}
 ggplot(data = snowshoe_weight, aes(x = weight)) +
   geom_histogram(bins = 18) +
   facet_wrap(~sex)
@@ -139,14 +140,15 @@ ggplot(data = snowshoe_weight, aes(sample = weight)) +
   facet_wrap(~sex)
 ```
 
-## D. Weight and Hind Foot Length 
-```{r}
+## D. Body mass and hind foot length 
+```{r task iv}
+#scatter plot of hind feet vs mass
 ggplot(data = snowshoe, aes(x = hindft , y = weight)) +
-  geom_point(aes(color = "cyan3"), size = .75)+
-  labs(x = "Hind Foot Length(mm)",
-       y = "Body Mass (g)",
-       caption = "") +
-  theme_classic()
+  geom_point(color = "#800080", size = .8)+
+  labs(x = "Hind Foot Length (mm)",
+       y = "Body Mass (g)") +
+  theme_hc() +
+  theme(legend.position = "none") #dopping legend
 
 snowshoe_lm <- lm(weight ~ hindft, data = snowshoe)
 ```
