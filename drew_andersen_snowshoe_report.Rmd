@@ -94,7 +94,8 @@ ggplot(data = snowshoe_weight, aes(sex,weight)) +
                size=2.5, 
                color="black", 
                fill="black") +
-  theme_hc()
+  theme_hc() +
+  theme(legend.text = element_text(size = 16))
 ```
 **Figure 2.** Juvenile snowshoe hare body mass distributions by site and sex. The black square on each series indicates the mean of that particular series. Data: Kielland et al. 2017
 
@@ -135,7 +136,6 @@ snow_female <- snowshoe_weight %>%
   pull(weight)
 
 snow_t <- t.test(snow_male, snow_female)
-#mean_diff <- round(snow_t$estimate[2] - snow_t$estimate[1],0)
 
 snow_cohen <- cohen.d(snow_male, snow_female)
 ```
@@ -160,7 +160,7 @@ snowshoe_lm_glance <- glance(snowshoe_lm)
 snowshoe_cor <- cor.test(snowshoe_weight$weight, snowshoe_weight$hindft)
 snowshoe_cor_tidy <- tidy(snowshoe_cor) # Pearson's r correlation
 
-plot(snowshoe_lm)
+plot(snowshoe_lm) #exploratory
 ```
 
 The relationship between juvenile hare hind foot length and body mass appears relatively linear. Simple linear regression revealed that hind foot length broadly predicts penguin body mass (p < 0.05, R^2^ = `r round(snowshoe_lm_glance$r.squared,2)`) with an average slope of $\beta$ = `r round(snowshoe_lm_tidy$estimate[2], 2)` g mm^-1^ (i.e., for each one millimeter increase in hind foot length we expect an average increase in body mass of `r round(snowshoe_lm_tidy$estimate[2], 2)` g). There is a moderate correlation between hind foot length and body mass (Pearson's *r* = `r round(snowshoe_cor_tidy$estimate,2)`, p < 0.05). Diagnostic plots (not included) reveal normally distributed and heteroscedastic residuals.
@@ -179,7 +179,7 @@ ggplot(data = snowshoe_weight, aes(x = hindft , y = weight)) +
 ## Summary
 Exploratory data analysis reveals the following initial findings: 
 
-- Juvenile snowshoe hare populations fluctuate year to year and may experience large spikes eery 2-4 years, however more data is needed to confirm this assertion. 
+- Juvenile snowshoe hare populations fluctuate year to year and may experience large spikes every 2-4 years, however more data is needed to confirm this assertion. 
 - On average, male juvenile snowshoe hares have a higher body mass than female hares (the mean difference and effect size are both small in this case.)
 - Hind foot length appears moderately linearly related with body mass for juvenile snowshoe hares; the relationship has a slope of `r round(snowshoe_lm_tidy$estimate[2], 2)` g mm^-1^.
 
